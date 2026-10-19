@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elysium — Minecraft Сервер</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Unbounded:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Стиль фону: Синя квадратична сітка (Blueprint style) */
+        body {
+            font-family: 'Unbounded', sans-serif;
+            background-color: #0b83e6;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.35) 2px, transparent 2px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.35) 2px, transparent 2px);
+            background-size: 50px 50px;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .pixel-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        /* 3D Картки */
+        .custom-card {
+            background: rgba(10, 25, 50, 0.9);
+            border: 3px solid #1d4ed8;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(10px);
+        }
+
+        /* 3D Кнопки */
+        .btn-3d-yellow {
+            background: linear-gradient(180deg, #ffe600 0%, #ff9900 100%);
+            border: 3px solid #000;
+            color: #000;
+            font-weight: 800;
+            box-shadow: 0 6px 0 #b35900;
+            transition: all 0.1s ease;
+        }
+        .btn-3d-yellow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #b35900;
+        }
+        .btn-3d-yellow:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #b35900;
+        }
+
+        .btn-3d-discord {
+            background: linear-gradient(180deg, #5865F2 0%, #3b42a1 100%);
+            border: 3px solid #000;
+            box-shadow: 0 5px 0 #1e2366;
+            transition: all 0.1s ease;
+        }
+        .btn-3d-discord:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 #1e2366;
+        }
+        .btn-3d-discord:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #1e2366;
+        }
+
+        .btn-3d-green {
+            background: linear-gradient(180deg, #2ecc71 0%, #1e824c 100%);
+            border: 3px solid #000;
+            box-shadow: 0 6px 0 #114b2b;
+            transition: all 0.1s ease;
+        }
+        .btn-3d-green:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #114b2b;
+        }
+        .btn-3d-green:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #114b2b;
+        }
+
+        /* Таби */
+        .nav-tab {
+            transition: all 0.2s ease;
+            border-bottom: 4px solid transparent;
+        }
+        .nav-tab.active {
+            background: rgba(255, 255, 255, 0.22);
+            border-bottom: 4px solid #ffe600;
+            color: #ffffff;
+        }
+
+        /* Сповіщення (Toast) */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #10B981;
+            color: #fff;
+            text-align: center;
+            border-radius: 10px;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            right: 30px;
+            bottom: 30px;
+            font-size: 14px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            border: 3px solid #000;
+        }
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.4s, fadeout 0.4s 2.6s;
+        }
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen justify-between">
+
+    <!-- Верхня Навігаційна Панель -->
+    <header class="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md border-b-4 border-black px-4 py-3">
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            
+            <!-- Логотип у шапці -->
+            <div class="flex items-center space-x-3 cursor-pointer select-none" onclick="switchTab('home')">
+                <i class="fa-solid fa-cube text-yellow-400 text-2xl drop-shadow"></i>
+                <span class="font-black text-2xl tracking-wider text-yellow-400 drop-shadow-[0_2px_0_#000]">ELYSIUM</span>
+            </div>
+
+            <!-- Вкладки Навігації -->
+            <nav class="flex items-center space-x-1 sm:space-x-2 bg-slate-900/80 p-1.5 rounded-xl border-2 border-slate-700">
+                <button onclick="switchTab('home')" id="tab-home" class="nav-tab active px-3 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-bold">
+                    <i class="fa-solid fa-house mr-1 sm:mr-2"></i>Головна
+                </button>
+                <button onclick="switchTab('modpack')" id="tab-modpack" class="nav-tab px-3 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-bold">
+                    <i class="fa-solid fa-box-open mr-1 sm:mr-2"></i>Модпак
+                </button>
+                <button onclick="switchTab('donate')" id="tab-donate" class="nav-tab px-3 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-bold">
+                    <i class="fa-solid fa-cart-shopping mr-1 sm:mr-2"></i>Донат
+                </button>
+                <button onclick="switchTab('rules')" id="tab-rules" class="nav-tab px-3 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-bold">
+                    <i class="fa-solid fa-book mr-1 sm:mr-2"></i>Правила
+                </button>
+            </nav>
+
+            <!-- Discord Кнопка -->
+            <div>
+                <a href="https://discord.gg/5NsbmWqNSS" target="_blank" rel="noopener noreferrer" class="btn-3d-discord px-4 py-2 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-2">
+                    <i class="fa-brands fa-discord text-lg"></i>
+                    <span class="hidden sm:inline">Discord</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основна секція сайту -->
+    <main class="max-w-5xl mx-auto px-4 py-8 w-full flex-grow">
+
+        <!-- ================= SECTION 1: ГОЛОВНА ================= -->
+        <section id="content-home" class="space-y-10">
+            <!-- Кастомний яскравіший 3D SVG Логотип Elysium -->
+            <div class="text-center py-6 px-2 flex flex-col items-center justify-center">
+                <div class="w-full max-w-3xl filter drop-shadow-[0_12px_20px_rgba(0,0,0,0.5)]">
+                    <svg viewBox="0 0 1000 220" class="w-full h-auto select-none overflow-visible">
+                        <defs>
+                            <!-- Головний яскравій градієнт (Сонячно-жовтий в золотисто-помаранчевий) -->
+                            <linearGradient id="elysiumGold" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#FFFF4D"/>
+                                <stop offset="35%" stop-color="#FFCC00"/>
+                                <stop offset="85%" stop-color="#FF7700"/>
+                                <stop offset="100%" stop-color="#E64400"/>
+                            </linearGradient>
+
+                            <!-- Тінь для 3D об'єму (Темно-червона грань) -->
+                            <linearGradient id="elysiumSide" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#A81400"/>
+                                <stop offset="100%" stop-color="#540800"/>
+                            </linearGradient>
+
+                            <!-- Блик зверху -->
+                            <linearGradient id="elysiumHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.8"/>
+                                <stop offset="100%" stop-color="#FFFF77" stop-opacity="0"/>
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Ефекти об'ємних 3D стінок (Тіні зміщені донизу) -->
+                        <g fill="url(#elysiumSide)" stroke="#000000" stroke-width="14" stroke-linejoin="miter">
+                            <!-- E -->
+                            <path d="M 60,30 H 170 V 65 H 105 V 95 H 155 V 125 H 105 V 160 H 170 V 195 H 60 Z" transform="translate(0, 18)"/>
+                            <!-- L -->
+                            <path d="M 190,30 H 235 V 160 H 295 V 195 H 190 Z" transform="translate(0, 18)"/>
+                            <!-- Y -->
+                            <path d="M 310,30 H 355 L 385,100 L 415,30 H 460 L 408,125 V 195 H 362 V 125 Z" transform="translate(0, 18)"/>
+                            <!-- S -->
+                            <path d="M 480,30 H 585 V 68 H 525 V 92 H 585 V 195 H 480 V 157 H 540 V 133 H 480 Z" transform="translate(0, 18)"/>
+                            <!-- I -->
+                            <path d="M 605,30 H 650 V 195 H 605 Z" transform="translate(0, 18)"/>
+                            <!-- U -->
+                            <path d="M 670,30 H 715 V 157 H 775 V 30 H 820 V 195 H 670 Z" transform="translate(0, 18)"/>
+                            <!-- M -->
+                            <path d="M 840,30 H 880 L 910,110 L 940,30 H 980 V 195 H 938 V 100 L 915,160 H 905 L 882,100 V 195 H 840 Z" transform="translate(0, 18)"/>
+                        </g>
+
+                        <!-- Чорний товстий Minecraft контур -->
+                        <g fill="none" stroke="#000000" stroke-width="16" stroke-linejoin="miter">
+                            <path d="M 60,30 H 170 V 65 H 105 V 95 H 155 V 125 H 105 V 160 H 170 V 195 H 60 Z"/>
+                            <path d="M 190,30 H 235 V 160 H 295 V 195 H 190 Z"/>
+                            <path d="M 310,30 H 355 L 385,100 L 415,30 H 460 L 408,125 V 195 H 362 V 125 Z"/>
+                            <path d="M 480,30 H 585 V 68 H 525 V 92 H 585 V 195 H 480 V 157 H 540 V 133 H 480 Z"/>
+                            <path d="M 605,30 H 650 V 195 H 605 Z"/>
+                            <path d="M 670,30 H 715 V 157 H 775 V 30 H 820 V 195 H 670 Z"/>
+                            <path d="M 840,30 H 880 L 910,110 L 940,30 H 980 V 195 H 938 V 100 L 915,160 H 905 L 882,100 V 195 H 840 Z"/>
+                        </g>
+
+                        <!-- Основне яскраво-золоте заповнення букв -->
+                        <g fill="url(#elysiumGold)" stroke="#3a0200" stroke-width="3" stroke-linejoin="miter">
+                            <!-- E -->
+                            <path d="M 60,30 H 170 V 65 H 105 V 95 H 155 V 125 H 105 V 160 H 170 V 195 H 60 Z"/>
+                            <!-- L -->
+                            <path d="M 190,30 H 235 V 160 H 295 V 195 H 190 Z"/>
+                            <!-- Y -->
+                            <path d="M 310,30 H 355 L 385,100 L 415,30 H 460 L 408,125 V 195 H 362 V 125 Z"/>
+                            <!-- S -->
+                            <path d="M 480,30 H 585 V 68 H 525 V 92 H 585 V 195 H 480 V 157 H 540 V 133 H 480 Z"/>
+                            <!-- I -->
+                            <path d="M 605,30 H 650 V 195 H 605 Z"/>
+                            <!-- U -->
+                            <path d="M 670,30 H 715 V 157 H 775 V 30 H 820 V 195 H 670 Z"/>
+                            <!-- M -->
+                            <path d="M 840,30 H 880 L 910,110 L 940,30 H 980 V 195 H 938 V 100 L 915,160 H 905 L 882,100 V 195 H 840 Z"/>
+                        </g>
+
+                        <!-- Верхній яскравій блиск -->
+                        <g fill="url(#elysiumHighlight)">
+                            <rect x="60" y="30" width="110" height="12"/>
+                            <rect x="190" y="30" width="45" height="12"/>
+                            <rect x="310" y="30" width="45" height="12"/>
+                            <rect x="415" y="30" width="45" height="12"/>
+                            <rect x="480" y="30" width="105" height="12"/>
+                            <rect x="605" y="30" width="45" height="12"/>
+                            <rect x="670" y="30" width="45" height="12"/>
+                            <rect x="775" y="30" width="45" height="12"/>
+                            <rect x="840" y="30" width="40" height="12"/>
+                            <rect x="940" y="30" width="40" height="12"/>
+                        </g>
+                    </svg>
+                </div>
+                
+                <p class="mt-4 text-slate-100 text-base sm:text-xl font-medium max-w-2xl bg-slate-950/70 p-4 rounded-xl border-2 border-slate-700">
+                    Український Minecraft сервер Create механізмів, унікальних пригод та затишної спільноти!
+                </p>
+            </div>
+
+            <!-- Блок з IP та Онлайном -->
+            <div class="custom-card p-6 sm:p-8 rounded-2xl max-w-2xl mx-auto text-center border-4 border-yellow-400">
+                <h2 class="text-xl sm:text-2xl font-bold mb-4 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-signal text-green-400"></i> Стан Сервера
+                </h2>
+
+                <!-- Статус Сервера -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6 bg-slate-950/80 p-4 rounded-xl border border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <span id="server-status-indicator" class="w-4 h-4 rounded-full bg-yellow-500 animate-pulse"></span>
+                        <span id="server-status-text" class="text-sm sm:text-base font-semibold">Перевірка...</span>
+                    </div>
+                    <div class="text-slate-500 hidden sm:block">|</div>
+                    <div class="text-sm sm:text-base font-semibold">
+                        Онлайн: <span id="online-count" class="text-yellow-400 font-bold">--</span> / <span id="max-players">--</span>
+                    </div>
+                    <button id="refresh-status-btn" onclick="refreshStatus()" title="Оновити онлайн" class="w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-yellow-400 flex items-center justify-center transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i id="refresh-status-icon" class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </div>
+
+                <div class="text-xs text-slate-500 -mt-3 mb-5">Оновлено: <span id="last-updated">--:--:--</span></div>
+
+                <!-- IP Копіювання -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <div class="bg-slate-950 px-5 py-3 rounded-xl border-2 border-slate-700 font-mono text-base sm:text-lg w-full sm:w-auto text-yellow-300 font-bold tracking-wider select-all" id="ip-display-text">
+                        elysium.pp.ua
+                    </div>
+                    <button onclick="copyIP()" class="btn-3d-yellow w-full sm:w-auto px-6 py-3 rounded-xl flex items-center justify-center gap-2 text-base">
+                        <i class="fa-solid fa-copy"></i>
+                        <span>Скопіювати IP</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Особливості Сервера -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="custom-card p-6 rounded-2xl border-t-4 border-yellow-400">
+                    <div class="text-yellow-400 text-3xl mb-3"><i class="fa-solid fa-gears"></i></div>
+                    <h3 class="text-lg font-bold mb-2">Мод Create</h3>
+                    <p class="text-slate-300 text-sm">Автоматизовані фабрики, поїзди та вітряки без меж для вашої фантазії.</p>
+                </div>
+                <div class="custom-card p-6 rounded-2xl border-t-4 border-blue-400">
+                    <div class="text-blue-400 text-3xl mb-3"><i class="fa-solid fa-shield-halved"></i></div>
+                    <h3 class="text-lg font-bold mb-2">Захист та Оптимізація</h3>
+                    <p class="text-slate-300 text-sm">Високий TPS, потужний хостинг та високий FPS навіть на старому залізі.</p>
+                </div>
+                <div class="custom-card p-6 rounded-2xl border-t-4 border-green-400">
+                    <div class="text-green-400 text-3xl mb-3"><i class="fa-solid fa-users"></i></div>
+                    <h3 class="text-lg font-bold mb-2">Спільнота</h3>
+                    <p class="text-slate-300 text-sm">Активний Discord, щотижневі івенти та чуйна адміністрація.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 2: МОДПАК ================= -->
+        <section id="content-modpack" class="hidden space-y-8">
+            <div class="text-center max-w-2xl mx-auto">
+                <h2 class="text-3xl sm:text-4xl font-extrabold mb-3 text-yellow-400">
+                    <i class="fa-solid fa-box-open mr-2"></i>Завантаження Модпаку
+                </h2>
+                <p class="text-slate-200 text-sm sm:text-base">
+                    Завантажте наш модпак для швидкого входу на сервер Elysium:
+                </p>
+            </div>
+
+            <!-- Кнопки Модпаку -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+                <!-- Для Піраток -->
+                <div class="custom-card p-8 rounded-2xl flex flex-col items-center text-center justify-between border-2 border-amber-500/50 hover:border-amber-400 transition">
+                    <div>
+                        <div class="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-3xl mb-4 mx-auto border border-amber-400/40">
+                            <i class="fa-solid fa-skull-crossbones"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2">Для Піраток</h3>
+                        <p class="text-slate-300 text-sm mb-6">
+                            Готовий ZIP/RAR архів для TLauncher, Legacy Launcher та інших піратських клієнтів.
+                        </p>
+                    </div>
+                    <a href="https://drive.google.com/file/d/1G48--_L5yPMOBPTS5JvtnEuBo0KVnJKI/view?usp=sharing" target="_blank" class="btn-3d-yellow w-full py-4 rounded-xl text-center text-lg">
+                        <i class="fa-solid fa-download mr-2"></i>Завантажити (Піратка)
+                    </a>
+                </div>
+
+                <!-- Для Ліцензії -->
+                <div class="custom-card p-8 rounded-2xl flex flex-col items-center text-center justify-between border-2 border-emerald-500/50 hover:border-emerald-400 transition">
+                    <div>
+                        <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-3xl mb-4 mx-auto border border-emerald-400/40">
+                            <i class="fa-solid fa-certificate"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2">Для Ліцензії</h3>
+                        <p class="text-slate-300 text-sm mb-6">
+                            Файл .mrpack / CurseForge для Prism Launcher, Modrinth та CurseForge App.
+                        </p>
+                    </div>
+                    <a href="https://drive.google.com/file/d/1dneDR9yVr12j1_ze-u4CrKEvUD3drY5f/view?usp=sharing" target="_blank" class="btn-3d-green w-full py-4 rounded-xl text-center text-lg">
+                        <i class="fa-solid fa-file-arrow-down mr-2"></i>Завантажити (Ліцензія)
+                    </a>
+                </div>
+            </div>
+
+            <!-- Інструкція -->
+            <div class="custom-card p-6 rounded-2xl max-w-3xl mx-auto">
+                <h4 class="text-lg font-bold mb-3 text-yellow-400 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info"></i> Інструкція зі встановлення:
+                </h4>
+                <ol class="list-decimal list-inside text-slate-300 text-sm space-y-2">
+                    <li>Завантажте відповідний архів для вашого лаунчера.</li>
+                    <li>Розпакуйте або перетягніть моди у папку <code class="bg-slate-950 px-2 py-1 rounded text-yellow-300">.minecraft/mods</code>.</li>
+                    <li>Виберіть версію **NeoForge 1.21.1** .</li>
+                    <li>Запустіть гру та підключайтесь: <code class="bg-slate-950 px-2 py-1 rounded text-yellow-300" id="instruction-ip">elysium.pp.ua</code></li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 3: ДОНАТ ================= -->
+        <section id="content-donate" class="hidden space-y-8">
+            <div class="text-center max-w-2xl mx-auto">
+                <h2 class="text-3xl sm:text-4xl font-extrabold mb-3 text-yellow-400">
+                    <i class="fa-solid fa-cart-shopping mr-2"></i>Донат Магазин
+                </h2>
+                <p class="text-slate-200 text-sm sm:text-base">
+                    Підтримайте проєкт Elysium та отримайте додаткові привілеї на сервері!
+                </p>
+            </div>
+
+            <!-- Товари -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Послуга 1: VIP -->
+                <div class="custom-card p-6 rounded-2xl flex flex-col justify-between border-2 border-amber-500/60 relative overflow-hidden">
+                    <div class="absolute -right-12 -top-12 bg-amber-500/20 w-32 h-32 rounded-full blur-xl pointer-events-none"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full text-xs font-bold uppercase">Привілей</span>
+                            <i class="fa-solid fa-crown text-2xl text-yellow-400"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2">VIP</h3>
+                        <p class="text-slate-300 text-xs sm:text-sm mb-4">
+                            Доступ до віп збірки кольоровий нік у чаті.
+                        </p>
+                        
+                        <!-- Вибір періоду для VIP -->
+                        <div class="bg-slate-950 p-3 rounded-xl mb-6 border border-slate-800">
+                            <label class="block text-xs text-slate-400 mb-1">Оберіть термін:</label>
+                            <select id="vip-duration" onchange="updateVipPrice()" class="w-full bg-slate-900 text-white rounded-lg p-2 border border-slate-700 text-sm focus:outline-none focus:border-yellow-400">
+                                <option value="100 грн (1 місяць)">1 Місяць — 100 грн</option>
+                                <option value="200 грн (3 місяці)">3 Місяці — 200 грн (Знижка!)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="text-center mb-4">
+                            <span id="vip-price-display" class="text-3xl font-black text-yellow-400">100 грн</span>
+                        </div>
+                        <a href="https://choko.link/Elysium" target="_blank" rel="noopener noreferrer" class="btn-3d-yellow block w-full py-3 rounded-xl text-center">
+                            Придбати VIP
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Послуга 2: Кастом Префікс -->
+                <div class="custom-card p-6 rounded-2xl flex flex-col justify-between border-2 border-purple-500/60 relative overflow-hidden">
+                    <div class="absolute -right-12 -top-12 bg-purple-500/20 w-32 h-32 rounded-full blur-xl pointer-events-none"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-xs font-bold uppercase">Кастомізація</span>
+                            <i class="fa-solid fa-tag text-2xl text-purple-400"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2">Кастом Префікс</h3>
+                        <p class="text-slate-300 text-xs sm:text-sm mb-6">
+                            Власний унікальний текст та колір префіксу перед вашим нікнеймом навжди.
+                        </p>
+                    </div>
+
+                    <div>
+                        <div class="text-center mb-4">
+                            <span class="text-3xl font-black text-purple-400">250 грн</span>
+                        </div>
+                        <a href="https://choko.link/Elysium" target="_blank" rel="noopener noreferrer" class="btn-3d-yellow block w-full py-3 rounded-xl text-center">
+                            Придбати Префікс
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Послуга 3: Розбан -->
+                <div class="custom-card p-6 rounded-2xl flex flex-col justify-between border-2 border-red-500/60 relative overflow-hidden">
+                    <div class="absolute -right-12 -top-12 bg-red-500/20 w-32 h-32 rounded-full blur-xl pointer-events-none"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="bg-red-500/20 text-red-300 px-3 py-1 rounded-full text-xs font-bold uppercase">Амністія</span>
+                            <i class="fa-solid fa-gavel text-2xl text-red-400"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2">Розбан</h3>
+                        <p class="text-slate-300 text-xs sm:text-sm mb-6">
+                            Повне зняття блокування з вашого ігрового акаунту на сервері Elysium.
+                        </p>
+                    </div>
+
+                    <div>
+                        <div class="text-center mb-4">
+                            <span class="text-3xl font-black text-red-400">500 грн</span>
+                        </div>
+                        <a href="https://choko.link/Elysium" target="_blank" rel="noopener noreferrer" class="btn-3d-yellow block w-full py-3 rounded-xl text-center">
+                            Придбати Розбан
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= SECTION 4: ПРАВИЛА ================= -->
+        <section id="content-rules" class="hidden space-y-8">
+            <div class="text-center max-w-2xl mx-auto">
+                <h2 class="text-3xl sm:text-4xl font-extrabold mb-3 text-yellow-400">
+                    <i class="fa-solid fa-book mr-2"></i>Правила Сервера
+                </h2>
+                <p class="text-slate-200 text-sm sm:text-base">
+                    Ознайомтеся з правилами для підтримки чесної та дружньої атмосфери!
+                </p>
+            </div>
+
+            <div class="custom-card p-6 sm:p-8 rounded-2xl max-w-4xl mx-auto space-y-6">
+                <!-- Правило 1 -->
+                <div class="border-b border-slate-800 pb-4">
+                    <h3 class="text-lg font-bold text-yellow-400 mb-1">1. Загальне спілкування</h3>
+                    <p class="text-slate-300 text-sm">
+                        Заборонені образи гравців, використання ненормативної лексики у надмірній кількості, спам, флуд та реклама сторонніх проєктів.
+                    </p>
+                </div>
+
+                <!-- Правило 2 -->
+                <div class="border-b border-slate-800 pb-4">
+                    <h3 class="text-lg font-bold text-yellow-400 mb-1">2. Ігровий процес</h3>
+                    <p class="text-slate-300 text-sm">
+                        Заборонено використання читів, модифікацій (X-Ray, Fly, KillAura), багоюзу та дюпу предметів.
+                    </p>
+                </div>
+
+                <!-- Правило 3 -->
+                <div class="border-b border-slate-800 pb-4">
+                    <h3 class="text-lg font-bold text-yellow-400 mb-1">3. Привати та Поведінка</h3>
+                    <p class="text-slate-300 text-sm">
+                        Гриферство чужих будівель, створення пасток на спавні або навмисне псування ландшафту суворо караються блокуванням.
+                    </p>
+                </div>
+
+                <!-- Правило 4 -->
+                <div>
+                    <h3 class="text-lg font-bold text-yellow-400 mb-1">4. Навантаження сервера (Create)</h3>
+                    <p class="text-slate-300 text-sm">
+                        Будуйте механізми розумно. Заборонено створювати закольцовані схеми, які критично знижують TPS сервера.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast Сповіщення -->
+    <div id="toast">IP адресу скопійовано!</div>
+
+    <!-- Футер -->
+    <footer class="bg-slate-950/90 border-t-2 border-slate-800 text-center py-6 px-4 text-slate-400 text-sm">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+                <p class="font-bold text-white">Elysium &copy; 2026</p>
+                <p class="text-xs text-slate-500 mt-1">Minecraft є зареєстрованою торговою маркою Mojang AB.</p>
+            </div>
+            <div class="flex items-center space-x-4 text-xl">
+                <a href="https://discord.gg" target="_blank" class="hover:text-yellow-400 transition"><i class="fa-brands fa-discord"></i></a>
+                <a href="#" class="hover:text-yellow-400 transition"><i class="fa-brands fa-youtube"></i></a>
+                <a href="#" class="hover:text-yellow-400 transition"><i class="fa-brands fa-telegram"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Логіка -->
+    <script>
+        // ====================================================================
+        //  НАЛАШТУВАННЯ СЕРВЕРА ELYSIUM
+        //  ВСТАВТЕ ІП АДРЕСУ ВАШОГО СЕРВЕРА НИЖЧЕ У ЗМІННУ SERVER_IP:
+        // ====================================================================
+        const SERVER_IP = "elysium.pp.ua"; // <-- ВСТАВТЕ ВАШ IP СЮДИ!
+        // Прямий адрес для відстеження онлайну (не показується гравцям)
+        const STATUS_ADDRESS = "ger-01-p.leavehosting.com:20002";
+        // ====================================================================
+
+        // Оновлюємо текст IP на сторінці при завантаженні
+        document.getElementById('ip-display-text').innerText = SERVER_IP;
+        document.getElementById('instruction-ip').innerText = SERVER_IP;
+
+        // Перемикання вкладок
+        function switchTab(tabName) {
+            const tabs = ['home', 'modpack', 'donate', 'rules'];
+            
+            tabs.forEach(tab => {
+                const content = document.getElementById(`content-${tab}`);
+                const btn = document.getElementById(`tab-${tab}`);
+                
+                if (tab === tabName) {
+                    content.classList.remove('hidden');
+                    btn.classList.add('active');
+                } else {
+                    content.classList.add('hidden');
+                    btn.classList.remove('active');
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Перевірка Онлайну Сервера через mcstatus.io API (кеш ~1 хв)
+        async function fetchServerStatus() {
+            const refreshBtn = document.getElementById('refresh-status-btn');
+            const refreshIcon = document.getElementById('refresh-status-icon');
+            refreshBtn.disabled = true;
+            refreshIcon.classList.add('animate-spin');
+            const statusIndicator = document.getElementById('server-status-indicator');
+            const statusText = document.getElementById('server-status-text');
+            const onlineCount = document.getElementById('online-count');
+            const maxPlayers = document.getElementById('max-players');
+
+            try {
+                const response = await fetch(`https://api.mcstatus.io/v2/status/java/${STATUS_ADDRESS}`);
+                const data = await response.json();
+
+                if (data.online) {
+                    statusIndicator.className = "w-4 h-4 rounded-full bg-green-500 shadow-lg shadow-green-500/50";
+                    statusText.innerText = "Сервер Онлайн";
+                    statusText.className = "text-sm sm:text-base font-semibold text-green-400";
+                    onlineCount.innerText = data.players ? data.players.online : 0;
+                    maxPlayers.innerText = data.players ? data.players.max : 0;
+                } else {
+                    statusIndicator.className = "w-4 h-4 rounded-full bg-red-500";
+                    statusText.innerText = "Сервер Офлайн";
+                    statusText.className = "text-sm sm:text-base font-semibold text-red-400";
+                    onlineCount.innerText = "0";
+                    maxPlayers.innerText = "0";
+                }
+            } catch (error) {
+                console.error("Помилка отримання стану сервера:", error);
+                statusIndicator.className = "w-4 h-4 rounded-full bg-yellow-500";
+                statusText.innerText = "Статус Невідомий";
+                onlineCount.innerText = "?";
+                maxPlayers.innerText = "?";
+            } finally {
+                document.getElementById('last-updated').innerText = new Date().toLocaleTimeString('uk-UA');
+                refreshIcon.classList.remove('animate-spin');
+                // Короткий кулдаун, щоб не спамити API
+                setTimeout(() => { refreshBtn.disabled = false; }, 3000);
+            }
+        }
+
+        function refreshStatus() {
+            fetchServerStatus();
+        }
+
+        // Копіювання IP
+        function copyIP() {
+            const tempInput = document.createElement('input');
+            tempInput.value = SERVER_IP;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast("IP адресу скопійовано: " + SERVER_IP);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        // Оновлення ціни VIP
+        function updateVipPrice() {
+            const select = document.getElementById('vip-duration');
+            const display = document.getElementById('vip-price-display');
+            if (select.value.includes("200")) {
+                display.innerText = "200 грн";
+            } else {
+                display.innerText = "100 грн";
+            }
+        }
+
+        // Автозапуск при завантаженні
+        window.onload = function() {
+            fetchServerStatus();
+            setInterval(fetchServerStatus, 60000);
+        };
+    </script>
+</body>
+</html>
